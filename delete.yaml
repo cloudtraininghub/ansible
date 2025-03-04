@@ -1,0 +1,18 @@
+---
+- name: Delete Azure VNet
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Delete the virtual network
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: myResourceGroup
+        name: myVNet
+        state: absent
+      register: vnet_deletion
+
+    - name: Delete the resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: myResourceGroup
+        state: absent
+      when: vnet_deletion is succeeded

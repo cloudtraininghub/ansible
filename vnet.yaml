@@ -1,0 +1,27 @@
+---
+- name: Create Azure VNet
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Create a resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: myResourceGroup
+        location: eastus
+
+    - name: Create a virtual network
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: myResourceGroup
+        name: myVNet
+        address_prefixes: "10.0.0.0/16"
+        dns_servers:
+          - "10.1.0.1"
+          - "10.1.0.2"
+        location: eastus
+
+    - name: Create a subnet
+      azure.azcollection.azure_rm_subnet:
+        resource_group: myResourceGroup
+        name: mySubnet
+        address_prefix: "10.0.1.0/24"
+        virtual_network: myVNet

@@ -1,0 +1,53 @@
+---
+- name: Create 2 Linux VMs in the same VNet
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Create a resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: myResourceGroup
+        location: eastus
+
+    - name: Create a virtual network
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: myResourceGroup
+        name: myVNet
+        address_prefixes: "10.0.0.0/16"
+        location: eastus
+
+    - name: Create a subnet
+      azure.azcollection.azure_rm_subnet:
+        resource_group: myResourceGroup
+        name: mySubnet
+        address_prefix: "10.0.1.0/24"
+        virtual_network: myVNet
+
+    - name: Create network interfaces
+      azure.azcollection.azure_rm_networkinterface:
+        resource_group: myResourceGroup
+        name: "{{ item }}-nic"
+        virtual_network: myVNet
+        subnet: mySubnet
+        location: eastus
+      loop:
+        - lvm1
+        - lvm2
+    - name: Create 2 Linux VMs
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: myResourceGroup
+        name: "{{ item }}"
+        vm_size: Standard_DS1_v2
+        admin_username: azureuser
+        admin_password: "P@ssw0rd1234!"
+        image:
+          offer: UbuntuServer
+          publisher: Canonical
+          sku: 18.04-LTS
+          version: latest
+        network_interfaces:
+          - name: "{{ item }}-nic"
+        location: eastus
+      loop:
+        - lvm1
+        - lvm2
